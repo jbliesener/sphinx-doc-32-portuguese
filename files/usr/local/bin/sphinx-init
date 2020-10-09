@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# ----- Generate skeleton ------------------------------------------------------
+
+sphinx-quickstart --makefile --no-batchfile "$@"
+
+# ----- Add 'livehtml' and 'pdf' builders to Makefile --------------------------
+
+makefile="$DATA_DIR/Makefile"
+
+touch "$makefile"
+
+echo    ""                                                                              >> "$makefile"
+echo    "livehtml:"                                                                     >> "$makefile"
+echo -e "\tsphinx-autobuild -b html --host 0.0.0.0 \$(ALLSPHINXOPTS) \$(BUILDDIR)/html" >> "$makefile"
+echo    ""                                                                              >> "$makefile"
+echo    "pdf:"                                                                          >> "$makefile"
+echo -e "\t\$(SPHINXBUILD) -b pdf \$(ALLSPHINXOPTS) \$(BUILDDIR)/pdf"                   >> "$makefile"
+echo -e "\t@echo"                                                                       >> "$makefile"
+echo -e "\t@echo \"Build finished. The PDF files are in \$(BUILDDIR)/pdf.\""            >> "$makefile"
+
+# ----- Add PDF extension to configuration -------------------------------------
+
+configuration="$DATA_DIR/conf.py"
+
+if [ ! -f "$configuration" ]; then
+    configuration="$DATA_DIR/source/conf.py"
+fi
+
+sed -i -e "s/^extensions = \[\]/extensions = [\'rst2pdf.pdfbuilder\']/g" "$configuration"
+
+cat "/usr/local/bin/sphinx-init-conf.py" >> "$configuration"
